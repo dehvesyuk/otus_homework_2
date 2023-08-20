@@ -1,11 +1,15 @@
-import abc
-import json
 import datetime
-import logging
 import hashlib
+import json
+import logging
 import uuid
-from optparse import OptionParser
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from optparse import OptionParser
+
+from fields import (
+    ClientIDsField, DateField, CharField, EmailField, PhoneField, BirthDayField,
+    GenderField, ArgumentsField
+)
 
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
@@ -31,38 +35,6 @@ GENDERS = {
     MALE: "male",
     FEMALE: "female",
 }
-
-
-class CharField:
-    pass
-
-
-class ArgumentsField:
-    pass
-
-
-class EmailField(CharField):
-    pass
-
-
-class PhoneField:
-    pass
-
-
-class DateField:
-    pass
-
-
-class BirthDayField:
-    pass
-
-
-class GenderField:
-    pass
-
-
-class ClientIDsField:
-    pass
 
 
 class ClientsInterestsRequest:
@@ -109,9 +81,22 @@ def method_handler(request, ctx, store):
     return response, code
 
 
+def clients_interests_handler(request, ctx, store):
+    #TODO add handler and auth decorator
+    response, code = None, None
+    return response, code
+
+
+def online_score_handler(request, ctx, store):
+    #TODO add handler and auth decorator
+    response, code = None, None
+    return response, code
+
+
 class MainHTTPHandler(BaseHTTPRequestHandler):
     router = {
-        "method": method_handler
+        "clients_interests": clients_interests_handler,
+        "online_score": online_score_handler
     }
     store = None
 
@@ -153,9 +138,10 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
                 "error": response or ERRORS.get(code, "Unknown Error"),
                 "code": code
             }
+        logging.info(f"r object: {r}")
         context.update(r)
         logging.info(context)
-        self.wfile.write(json.dumps(r))
+        self.wfile.write(json.dumps(r).encode())
 
 
 if __name__ == "__main__":
