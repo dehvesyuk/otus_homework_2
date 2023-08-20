@@ -1,1 +1,1 @@
-# otus_homework_2
+# Scoring API
