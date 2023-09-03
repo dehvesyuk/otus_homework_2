@@ -22,4 +22,4 @@ def get_interests(store, cid):
         "cars", "pets", "travel", "hi-tech", "sport", "music", "books", "tv",
         "cinema", "geek", "otus"
     ]
-    return random.sample(interests, 2)
+    return {str(ci): random.sample(interests, 2) for ci in cid}

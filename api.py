@@ -1,8 +1,10 @@
 import datetime
 import hashlib
 import json
+import functools
 import logging
 import uuid
+from typing import List
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from optparse import OptionParser
 
@@ -10,6 +12,7 @@ from fields import (
     ClientIDsField, DateField, CharField, EmailField, PhoneField, BirthDayField,
     GenderField, ArgumentsField
 )
+from scoring import get_interests
 
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
@@ -37,9 +40,30 @@ GENDERS = {
 }
 
 
-class ClientsInterestsRequest:
+class Request:
+    def __init__(self, **params):
+        self._fields = {p: params[p] for p in params}
+
+    def validate(self):
+
+
+
+class ClientsInterestsRequest(Request):
     client_ids = ClientIDsField(required=True)
     date = DateField(required=False, nullable=True)
+
+    def validate(self):
+        # TODO add try: except block with raise
+        return self._client_ids != []
+
+    @property
+    def context(self):
+        return {
+            "nclients": len(self._client_ids)
+        }
+
+    def generate_response(self):
+        return get_interests({}, self._client_ids)
 
 
 class OnlineScoreRequest:
@@ -76,15 +100,33 @@ def check_auth(request):
     return False
 
 
+def login_required(method_handler: callable):
+    @functools.wraps(method_handler)
+    def wrapper(request: MethodRequest, ctx, store):
+        if check_auth(request):
+            res = method_handler(request, ctx, store)
+        else:
+            res = (FORBIDDEN, ERRORS[FORBIDDEN])
+        return res
+    return wrapper
+
+
 def method_handler(request, ctx, store):
     response, code = None, None
     return response, code
 
 
 def clients_interests_handler(request, ctx, store):
-    #TODO add handler and auth decorator
-    response, code = None, None
-    return response, code
+    logging.info(f"request: {request}, ctx: {ctx}, store: {store}")
+    #TODO add auth decorator
+    handler = ClientsInterestsRequest(request["body"])
+    context = handler.context
+    response = handler.generate_response()
+    try:
+        handler.validate()
+        return response, 200
+    except Exception as e:
+        return {"error": f"ошибка валидации, {e}"}, 422
 
 
 def online_score_handler(request, ctx, store):

@@ -3,14 +3,24 @@ class Field:
     def __init__(self, required=False, nullable=True):
         self.required = required
         self.nullable = nullable
+        self.value = None
+
+    def validate(self, value):
+        ...
 
 
 class CharField(Field):
-    pass
+
+    def validate(self, value):
+        if not (type(value) == str):
+            raise ValueError('Char Field got non-string type')
 
 
 class DigitField(Field):
-    pass
+
+    def validate(self, value):
+        if not (type(value) == int):
+            raise ValueError('Char Digit got non-digit type')
 
 
 class DateField(Field):
