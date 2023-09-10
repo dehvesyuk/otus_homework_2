@@ -42,9 +42,9 @@ GENDERS = {
 
 class Request:
     def __init__(self, **params):
-        self._fields = {p: params[p] for p in params}
-
-    def validate(self):
+        for key, value in params.items():
+            setattr(self, key, value)
+        self.validate()
 
 
 
